@@ -16,6 +16,9 @@ __pycache__/
 .coverage
 dist/
 
+# docs agent workspace
+devdocs/
+
 # os / editor
 .DS_Store
 .idea/

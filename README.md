@@ -192,7 +192,7 @@ Extensions this archive cannot support (mostly for lack of user-level data), but
 - [Beyond power calculations: assessing Type S (sign) and Type M (magnitude) errors](https://doi.org/10.1177/1745691614551642) (Gelman & Carlin, 2014) - the exaggeration-factor framing behind `expected_winner_exaggeration` in `abkit.shrinkage`.
 - [The significance filter, the winner's curse and the need to shrink](https://doi.org/10.1111/stan.12241) (van Zwet & Cator, 2021) - why selected estimates must be shrunk; the rationale for reporting shrinkage-corrected lifts everywhere.
 
-#### Industry practice
+#### Industry Practices
 
 - [Trustworthy Online Controlled Experiments: A Practical Guide to A/B Testing](https://doi.org/10.1017/9781108653985) (Kohavi, Tang & Xu, 2020) - the platform-practice reference for SRM as an invalidation gate, multiplicity conventions, and guardrails.
 - [Diagnosing sample ratio mismatch in online controlled experiments](https://doi.org/10.1145/3292500.3330722) (Fabijan et al., KDD 2019) - the SRM taxonomy and strict-alpha convention used by `abkit.health`.

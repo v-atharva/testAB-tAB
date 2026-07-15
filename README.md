@@ -1,7 +1,7 @@
 # 🧪 Upworthy Readout: An Experiment Readout Engine and Decision Dashboard for 32,487 Real A/B Tests
 
 Every headline/image A/B test Upworthy.com ran between January 2013 and April 2015 - 32,487 experiments, 150,817 arms, ~538 million participant assignments ([Upworthy Research Archive](https://upworthy.natematias.com/about-the-archive.html), [Nature Scientific Data](https://www.nature.com/articles/s41597-021-00934-7)) - re-analyzed with the statistics an experimentation platform should have applied.
-The project comprises a reusable statistics library, a batch analysis pipeline, and a dashboard that renders a decision-grade readout for any of those experiments.
+It began as a simple curiosity - what happens to two years of famous curiosity-gap headline tests when they are re-read with careful statistics? - and grew into a reusable statistics library, a batch analysis pipeline, and a dashboard that renders a decision-grade readout for any of those experiments.
 
 A readout must get five things right: health checks before inference (a broken traffic split invalidates a test, it doesn't decide it); corrections for testing many arms and many experiments; the winner's curse (the arm you noticed *because it won* is exaggerated by selection); power against effects that actually occur, so "not significant" is never silently read as "no effect"; and anytime-valid methods if anyone will peek before the end.
 This repo demonstrates all five, on real data, at scale.
@@ -49,8 +49,8 @@ The project uses a combination of the following technologies:
 1. **Python 3.11+** - the core language for the statistics library, the pipeline, and the dashboard.
 2. **NumPy + SciPy** - vectorized Monte Carlo, distributions, optimization, and quadrature behind every statistical routine.
 3. **Pandas + PyArrow** - data manipulation in the analysis layer and compact Parquet results the dashboard reads.
-4. **Streamlit** - the four-page, read-only decision dashboard.
-5. **Plotly** - interactive charts inside the dashboard.
+4. **FastAPI + uvicorn** - a thin, read-only JSON API over abkit and the precomputed results; the frontend renders numbers, it never derives them.
+5. **Hand-built SPA + plotly.js (WebGL)** - the four-page dashboard: no framework, vendored plotly.js for interactive, animated, and 3-D charts.
 6. **Matplotlib** - the static meta-analysis figures in `outputs/figures/`.
 7. **uv** - fast, lockfile-driven environment management, used identically in development, CI, and Docker.
 8. **pytest + statsmodels** - the simulation-validation test suite; statsmodels appears only as a reference implementation to validate against.
@@ -66,9 +66,9 @@ The project uses a combination of the following technologies:
    **Every statistical routine is validated in `tests/` against simulation or a reference implementation**: empirical type-I error ≈ α, CI coverage ≈ nominal, shrinkage posterior calibration, mSPRT error control under *continuous* monitoring (while the naive repeated z-test demonstrably inflates), and O'Brien-Fleming constants recovered against published values.
 2. **Corpus meta-analysis (`src/analysis/`).**
    Checksummed OSF ingest, count validation against the published totals, corpus priors fit on the exploratory set (frozen thereafter), batch readouts, then the figures in `outputs/figures/` and the numbers above.
-3. **Decision dashboard (`src/dashboard/`, Streamlit).**
-   A readout tool, not a chart gallery.
-   Four screens: **experiment readout** (verdict, naive *vs* corrected lift with intervals, Bayesian panel, health badges, achieved power - every number with a plain-English line a non-statistician can act on), **sequential monitoring** (replay a test with a narrowing confidence sequence, a "could have safely stopped here" marker, and the naive peeking rejections it avoids), **design-a-test** (power/MDE anchored to the corpus prior: *plan for lifts that actually occur*), and the **corpus explorer**.
+3. **Decision dashboard (`src/dashboard/`, FastAPI + single-page frontend).**
+   A readout tool, not a chart gallery: a thin JSON API over abkit (every statistic is computed by the validated library — nothing is re-derived in JavaScript) under a minimal, hand-built frontend.
+   Four screens: **experiment readout** (verdict, naive *vs* corrected lift with animated intervals, Bayesian panel, health badges, achieved power - every number with a plain-English line a non-statistician can act on), **sequential monitoring** (a play-button replay that streams the test back in with its narrowing confidence sequence, a "could have safely stopped here" marker, and the naive peeking rejections it avoids), **design-a-test** (power/MDE anchored to the corpus prior, with the full impressions × lift → power trade-off as a rotatable 3-D surface and the 80% planning bar drawn as a ridge), and the **corpus explorer** (every corrected winner as an interactive 3-D cloud - naive lift × corrected lift × power - where the winner's curse is literally visible as distance from the no-exaggeration wall).
    Read-only over precomputed parquet; an uncorrected significant result is never presented as a win anywhere in the UI.
 
 ---
@@ -108,7 +108,7 @@ For a full reproduction, download the archive from OSF (checksummed, cached, ~95
 4. The one-shot final run on confirmatory + holdout (intentionally run once):
    `make confirmatory`
 
-5. Launch the Streamlit dashboard:
+5. Launch the dashboard (uvicorn, serves at http://localhost:8501):
    `make dashboard`
 
 Docker alternative: `docker build -t upworthy-readout . && docker run -p 8501:8501 upworthy-readout`.
@@ -167,14 +167,15 @@ CI runs lint (ruff), types (mypy strict), the full test suite, and an end-to-end
 
 ### Future Work
 
-Extensions this archive cannot support (mostly for lack of user-level data), but that follow naturally from the methods here:
+The archive is a fixed, aggregate snapshot - no API, no event logs, no user-level records - and most of the interesting extensions begin exactly at that boundary.
+With richer access (an experimentation API, event-level exports, or authorized internal data), the analysis could grow in several directions:
 
-- **Guardrail metrics with non-inferiority gates** - a CTR win that hurts retention or revenue is a loss; verdicts should require "primary wins AND guardrails don't regress (one-sided non-inferiority)".
-- **CUPED / regression adjustment** on user-level pre-exposure covariates - the standard 30-50% variance reduction (Deng et al., 2013) this archive can't demonstrate for lack of user data.
-- **Automated SRM triage**, not just detection: segment-level chi-squares (browser, geo, day) to localize the broken slice, and quarantine rules.
-- **Interference & novelty checks** - switchback or cluster designs where units interact; first-week vs later-week effect comparison before shipping.
-- **Corpus-level holdouts** - a standing 5% global holdout to measure the *cumulative* effect of shipped wins against the shrinkage predictions (the winner's-curse ledger, closed).
-- **Decision memos as artifacts** - the dashboard's verdict block, persisted and versioned per experiment, so "why was this shipped" has an answer a year later.
+- **Guardrail metrics** - CTR is the only outcome the archive records; with engagement or retention data, a "win" could also be required to hold up against guardrail metrics (one-sided non-inferiority) instead of a single number.
+- **CUPED / regression adjustment** - the standard 30-50% variance reduction (Deng et al., 2013) needs pre-exposure user covariates, which aggregate counts cannot provide.
+- **SRM diagnosis, not just detection** - segment-level splits (browser, geo, day-of-week) would localize *why* a traffic imbalance happened; aggregates can only flag that it did.
+- **Interference and novelty checks** - detecting them needs exposure timelines: first-week vs later-week effect comparisons, or switchback designs where units interact.
+- **True sequential monitoring** - the replays here are reconstructions from final counts; live event streams would let the anytime-valid machinery run on real trajectories instead.
+- **Closing the winner's-curse ledger** - a standing holdout tracking the cumulative effect of shipped winners against the shrinkage predictions, so the corrections themselves get tested against realized outcomes.
 
 ---
 

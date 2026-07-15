@@ -43,4 +43,4 @@ confirmatory:  ## the one-shot final run (confirmatory + holdout). Run ONCE.
 figures: analysis
 
 dashboard:
-	uv run streamlit run src/dashboard/app.py
+	uv run uvicorn dashboard.server:app --app-dir src --port 8501

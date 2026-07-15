@@ -23,3 +23,7 @@ devdocs/
 .DS_Store
 .idea/
 .vscode/
+
+# agent tooling (machine-managed)
+.agents/
+.claude/

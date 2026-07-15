@@ -1,0 +1,38 @@
+# Single source of truth for every statistical default in the project.
+# Every number the dashboard or pipeline uses is set (and documented) here.
+# Fitted-prior values live in config/fitted_priors.yaml, generated ONCE from the
+# exploratory set by `make priors` and committed; nothing is fit on confirmatory data.
+
+alpha: 0.05                 # two-sided significance level for all frequentist readouts
+confidence_level: 0.95      # CI level shown everywhere (1 - alpha)
+
+srm:
+  alpha: 0.001              # SRM chi-square threshold (industry convention: stricter than 0.05
+                            # because an SRM invalidates the test rather than deciding it)
+
+gates:
+  min_impressions_per_arm: 100   # below this, the readout refuses to conclude
+  min_total_impressions: 1000
+  underpowered_below: 0.50       # verdict says "underpowered" when achieved power vs the
+                                 # corpus-typical lift is below this
+
+multiplicity:
+  within_test: holm         # pairwise-vs-baseline corrections inside a k-arm test
+  across_corpus: benjamini_hochberg   # FDR control when scanning many experiments
+
+sequential:
+  mixture_phi: 1.0e-5       # mSPRT normal-mixture variance on the absolute CTR difference.
+                            # Rule: phi ~ E[theta^2] under the corpus prior. A typical true
+                            # lift here is ~0.3 pp absolute (tau ~ 0.2 log-odds on 1.5% CTR),
+                            # so phi ~ (3e-3)^2 = 1e-5. Sensitivity shown in methods appendix.
+  obf_looks: 10             # number of looks for the O'Brien-Fleming comparison
+
+bayes:
+  mc_draws: 200000          # Monte Carlo draws for P(best) / expected loss
+  seed: 20260715
+
+power:
+  target: 0.80              # planning power for the design page
+
+replay:
+  seed: 20260715            # conditional-permutation replay seed (deterministic UI)

@@ -1,0 +1,28 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Sync environment
+        run: uv sync
+      - name: Lint
+        run: uv run ruff check src tests
+      - name: Type-check
+        run: uv run mypy
+      - name: Tests (simulation-validation suite)
+        run: uv run pytest tests/
+      - name: Pipeline smoke run on bundled 50-test sample (no downloads)
+        run: uv run python -m analysis.run_pipeline --set sample

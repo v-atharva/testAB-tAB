@@ -1,0 +1,21 @@
+# data: raw archive files are downloaded via `make data`, never committed
+data/raw/
+data/processed/
+outputs/results/
+*.parquet
+!data/sample/*
+
+# python
+__pycache__/
+*.pyc
+.venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+dist/
+
+# os / editor
+.DS_Store
+.idea/
+.vscode/

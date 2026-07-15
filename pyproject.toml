@@ -1,0 +1,78 @@
+[project]
+name = "upworthy-readout"
+version = "0.1.0"
+description = "Experiment readout engine and decision dashboard for the Upworthy Research Archive (32,487 real A/B tests)"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Atharva Vaidya" }]
+dependencies = [
+    "numpy>=1.26",
+    "scipy>=1.11",
+    "pandas>=2.1",
+    "pyarrow>=14.0",
+    "pyyaml>=6.0",
+    "requests>=2.31",
+    "matplotlib>=3.8",
+    "streamlit>=1.31",
+    "plotly>=5.18",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=4.1",
+    "ruff>=0.6",
+    "mypy>=1.10",
+    "statsmodels>=0.14",   # reference implementations for validation tests only
+    "pandas-stubs",
+    "types-PyYAML",
+    "types-requests",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/abkit", "src/analysis", "src/dashboard"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "NPY", "RUF"]
+ignore = ["SIM108"]  # ternary-vs-if is a style call, not a defect
+
+[tool.mypy]
+# 3.12 here only because numpy's stubs use `type` statements; the source code
+# itself stays 3.11-compatible (enforced by ruff target-version and CI matrix).
+python_version = "3.12"
+mypy_path = "src"
+strict = true
+files = ["src"]
+
+[[tool.mypy.overrides]]
+module = ["scipy.*", "plotly.*", "streamlit.*", "matplotlib.*", "statsmodels.*", "pyarrow.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# Analysis layer is pandas-heavy; keep it typed but allow untyped pandas idioms.
+module = ["analysis.*"]
+disallow_any_expr = false
+warn_return_any = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+# Resilience against macOS marking the editable-install .pth hidden (Python 3.13
+# skips hidden .pth files); `make setup` also clears the flag.
+pythonpath = ["src"]
+markers = [
+    "slow: long-running simulation tests (excluded in CI quick job)",
+]
+
+[tool.coverage.run]
+source = ["src/abkit"]

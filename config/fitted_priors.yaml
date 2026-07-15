@@ -1,0 +1,10 @@
+provenance: Fit ONCE on the exploratory set by analysis/fit_priors.py; frozen thereafter.
+  Do not refit on confirmatory or holdout data.
+ctr_prior:
+  a: 2.074562
+  b: 129.672071
+lift_prior:
+  mu: -0.06418942
+  tau2: 0.09174288
+n_lifts_used: 17780
+time_split_z_dispersion: 1.0581

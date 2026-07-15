@@ -1,6 +1,11 @@
 # Every artifact in this project is regenerable from here.
 .PHONY: setup lint test test-fast data sample priors analysis smoke figures dashboard confirmatory
 
+# Belt and suspenders: on macOS, iCloud Desktop sync intermittently marks the
+# editable-install .pth "hidden", which Python 3.13 then skips. PYTHONPATH keeps
+# `python -m analysis...` working regardless; `make setup` clears the flag too.
+export PYTHONPATH := src
+
 setup:  ## install the environment (uv) and de-hide editable .pth (macOS/iCloud quirk)
 	uv sync
 	-chflags nohidden .venv/lib/python*/site-packages/*.pth 2>/dev/null

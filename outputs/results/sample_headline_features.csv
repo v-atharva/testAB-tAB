@@ -1,0 +1,8 @@
+feature,winner_gains,winner_drops,discordant_pairs,p_sign_test,q_bh,net_pp
+demonstrative,0,1,1,1.0,1.0,-25.0
+second_person,0,1,1,1.0,1.0,-25.0
+question,0,0,0,1.0,1.0,0.0
+exclamation,0,0,0,1.0,1.0,0.0
+number,0,0,0,1.0,1.0,0.0
+all_caps_word,0,0,0,1.0,1.0,0.0
+quotation,1,0,1,1.0,1.0,25.0

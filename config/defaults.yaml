@@ -21,10 +21,11 @@ multiplicity:
   across_corpus: benjamini_hochberg   # FDR control when scanning many experiments
 
 sequential:
-  mixture_phi: 1.0e-5       # mSPRT normal-mixture variance on the absolute CTR difference.
-                            # Rule: phi ~ E[theta^2] under the corpus prior. A typical true
-                            # lift here is ~0.3 pp absolute (tau ~ 0.2 log-odds on 1.5% CTR),
-                            # so phi ~ (3e-3)^2 = 1e-5. Sensitivity shown in methods appendix.
+  mixture_phi: 2.5e-5       # mSPRT normal-mixture variance on the absolute CTR difference.
+                            # Rule: phi ~ E[theta^2] under the corpus prior, which the
+                            # exploratory fit puts at (0.0157 CTR x 0.31 log-odds sd)^2 ~ 2.5e-5.
+                            # Validity holds for ANY phi (only power changes); sensitivity
+                            # shown in the methods appendix.
   obf_looks: 10             # number of looks for the O'Brien-Fleming comparison
 
 bayes:

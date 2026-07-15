@@ -1,0 +1,57 @@
+{
+  "dataset": "sample",
+  "n_tests": 50,
+  "n_arms": 227,
+  "verdict_counts": {
+    "underpowered": 28,
+    "keep_baseline": 13,
+    "ship_variant": 6,
+    "invalid_srm": 3
+  },
+  "winners_curse": {
+    "n_corrected_winners": 8,
+    "median_exaggeration_ratio": 1.418,
+    "median_naive_rel_lift": 0.6204,
+    "median_shrunk_rel_lift": 0.4214,
+    "median_excess_rel_lift_pp": 19.86
+  },
+  "power": {
+    "median_achieved_power": 0.392,
+    "frac_tests_power_ge_80": 0.0213
+  },
+  "fdr": {
+    "wins_uncorrected": 10,
+    "wins_holm": 6,
+    "wins_holm_plus_bh": 3,
+    "frac_naive_wins_evaporating": 0.7
+  },
+  "peeking": {
+    "sim_naive_fp_by_looks": {
+      "1": 0.0575,
+      "2": 0.0895,
+      "5": 0.137,
+      "10": 0.1825,
+      "20": 0.223,
+      "50": 0.272
+    },
+    "sim_msprt_fp_continuous": 0.0075,
+    "replay_tests_without_corrected_winner": 41,
+    "replay_phantom_win_rate_naive": 0.3171,
+    "replay_phantom_win_rate_msprt": 0.0244
+  },
+  "srm": {
+    "n_failed": 3,
+    "rate": 0.06
+  },
+  "headline_features": {
+    "n_paired_tests": 4,
+    "significant_features_bh": []
+  },
+  "upworthy_audit": {
+    "n_declared": 19,
+    "frac_of_tests": 0.38,
+    "frac_surviving_correction": 0.1579,
+    "frac_underpowered_verdict": 0.4211,
+    "frac_srm_failed": 0.0
+  }
+}

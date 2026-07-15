@@ -1,9 +1,10 @@
-# data: raw archive files are downloaded via `make data`, never committed
+# data: raw archive files are downloaded via `make data`, never committed.
+# Precomputed batch RESULTS are committed (small) so the dashboard works
+# straight after clone without downloading the archive.
 data/raw/
 data/processed/
-outputs/results/
-*.parquet
 !data/sample/*
+!outputs/results/*
 
 # python
 __pycache__/

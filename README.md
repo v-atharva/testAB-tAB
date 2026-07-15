@@ -178,54 +178,53 @@ Extensions this archive cannot support (mostly for lack of user-level data), but
 
 ---
 
-### Repo Map
-
-```
-src/abkit/        the library (typed, tested, importable on its own)
-src/analysis/     ingest -> priors -> batch readouts -> meta-analysis figures
-src/dashboard/    Streamlit app (4 pages, read-only)
-config/           every default + frozen fitted priors
-data/sample/      committed 50-test sample (CI smoke runs; raw schema)
-notebooks/        one narrative notebook (executes cleanly end-to-end)
-outputs/          figures + committed batch results
-tests/            82 tests; the simulation-validation suite is the point
-```
-
----
-
 ### References
-
-Every method in this project traces to published work; the citations below are grouped by the role they play.
-Where a routine implements a specific paper, the module is noted in parentheses.
 
 #### Dataset
 
-1. Matias, J.N., Munger, K., Le Quere, M.A., & Ebersole, C. (2021). The Upworthy Research Archive, a time series of 32,487 experiments in U.S. media. *Scientific Data*, 8, 195. [doi:10.1038/s41597-021-00934-7](https://doi.org/10.1038/s41597-021-00934-7).
-   Distributed for research via [OSF (node jd64p)](https://osf.io/jd64p/), courtesy of Good Inc. and the archive team.
+- [The Upworthy Research Archive, a time series of 32,487 experiments in U.S. media](https://doi.org/10.1038/s41597-021-00934-7) (Matias et al., *Scientific Data*, 2021) - the dataset itself, distributed for research via [OSF](https://osf.io/jd64p/) courtesy of Good Inc. and the archive team.
 
 #### Statistical methodology
 
-2. Wilson, E.B. (1927). Probable inference, the law of succession, and statistical inference. *Journal of the American Statistical Association*, 22(158), 209-212. [doi:10.1080/01621459.1927.10502953](https://doi.org/10.1080/01621459.1927.10502953). (Per-arm CTR intervals, `abkit.freq`.)
-3. Newcombe, R.G. (1998). Interval estimation for the difference between independent proportions: comparison of eleven methods. *Statistics in Medicine*, 17(8), 873-890. [doi:10.1002/(SICI)1097-0258(19980430)17:8<873::AID-SIM779>3.0.CO;2-I](https://doi.org/10.1002/(SICI)1097-0258(19980430)17:8%3C873::AID-SIM779%3E3.0.CO;2-I). (Absolute-lift intervals, method 10.)
-4. Katz, D., Baptista, J., Azen, S.P., & Pike, M.C. (1978). Obtaining confidence intervals for the risk ratio in cohort studies. *Biometrics*, 34(3), 469-474. [doi:10.2307/2530610](https://doi.org/10.2307/2530610). (Relative-lift intervals.)
-5. Woolf, B. (1955). On estimating the relation between blood group and disease. *Annals of Human Genetics*, 19(4), 251-253. [doi:10.1111/j.1469-1809.1955.tb01348.x](https://doi.org/10.1111/j.1469-1809.1955.tb01348.x). (Log-odds lift variance, `abkit.shrinkage`.)
-6. Fleiss, J.L., Levin, B., & Paik, M.C. (2003). *Statistical Methods for Rates and Proportions* (3rd ed.). Wiley. [doi:10.1002/0471445428](https://doi.org/10.1002/0471445428). (Power/sample-size formulas, `abkit.design`.)
-7. Holm, S. (1979). A simple sequentially rejective multiple test procedure. *Scandinavian Journal of Statistics*, 6(2), 65-70. [jstor.org/stable/4615733](https://www.jstor.org/stable/4615733). (Within-test familywise correction.)
-8. Benjamini, Y., & Hochberg, Y. (1995). Controlling the false discovery rate: a practical and powerful approach to multiple testing. *Journal of the Royal Statistical Society: Series B*, 57(1), 289-300. [doi:10.1111/j.2517-6161.1995.tb02031.x](https://doi.org/10.1111/j.2517-6161.1995.tb02031.x). (Corpus-level FDR control.)
-9. Johari, R., Koomen, P., Pekelis, L., & Walsh, D. (2017). Peeking at A/B tests: why it matters, and what to do about it. *Proceedings of KDD '17*. [doi:10.1145/3097983.3097992](https://doi.org/10.1145/3097983.3097992). (mSPRT always-valid p-values, `abkit.sequential`.)
-10. Johari, R., Pekelis, L., & Walsh, D.J. (2022). Always valid inference: continuous monitoring of A/B tests. *Operations Research*, 70(3), 1806-1821. [doi:10.1287/opre.2021.2135](https://doi.org/10.1287/opre.2021.2135). (Confidence sequences from the mixture martingale.)
-11. Howard, S.R., Ramdas, A., McAuliffe, J., & Sekhon, J. (2021). Time-uniform, nonparametric, nonasymptotic confidence sequences. *Annals of Statistics*, 49(2), 1055-1080. [doi:10.1214/20-AOS1991](https://doi.org/10.1214/20-AOS1991). (The modern confidence-sequence framework; Ville's inequality underlies the anytime guarantee.)
-12. O'Brien, P.C., & Fleming, T.R. (1979). A multiple testing procedure for clinical trials. *Biometrics*, 35(3), 549-556. [doi:10.2307/2530245](https://doi.org/10.2307/2530245). (Group-sequential boundaries used as the classical contrast.)
-13. Efron, B., & Morris, C. (1975). Data analysis using Stein's estimator and its generalizations. *Journal of the American Statistical Association*, 70(350), 311-319. [doi:10.1080/01621459.1975.10479864](https://doi.org/10.1080/01621459.1975.10479864). (Normal-normal empirical-Bayes shrinkage.)
-14. Gelman, A., & Carlin, J. (2014). Beyond power calculations: assessing Type S (sign) and Type M (magnitude) errors. *Perspectives on Psychological Science*, 9(6), 641-651. [doi:10.1177/1745691614551642](https://doi.org/10.1177/1745691614551642). (The exaggeration-factor framing behind `expected_winner_exaggeration`.)
-15. van Zwet, E.W., & Cator, E.A. (2021). The significance filter, the winner's curse and the need to shrink. *Statistica Neerlandica*, 75(4), 437-452. [doi:10.1111/stan.12241](https://doi.org/10.1111/stan.12241). (Why selected estimates must be shrunk.)
+- [Interval estimation for the difference between independent proportions: comparison of eleven methods](https://doi.org/10.1002/(SICI)1097-0258(19980430)17:8%3C873::AID-SIM779%3E3.0.CO;2-I) (Newcombe, 1998) - the hybrid score interval behind every absolute-lift CI in `abkit.freq`.
+- [Peeking at A/B tests: why it matters, and what to do about it](https://doi.org/10.1145/3097983.3097992) (Johari et al., KDD 2017) - the mSPRT always-valid p-values implemented in `abkit.sequential`.
+- [Always valid inference: continuous monitoring of A/B tests](https://doi.org/10.1287/opre.2021.2135) (Johari et al., *Operations Research*, 2022) - the confidence sequences shown on the sequential-monitoring page.
+- [Beyond power calculations: assessing Type S (sign) and Type M (magnitude) errors](https://doi.org/10.1177/1745691614551642) (Gelman & Carlin, 2014) - the exaggeration-factor framing behind `expected_winner_exaggeration` in `abkit.shrinkage`.
+- [The significance filter, the winner's curse and the need to shrink](https://doi.org/10.1111/stan.12241) (van Zwet & Cator, 2021) - why selected estimates must be shrunk; the rationale for reporting shrinkage-corrected lifts everywhere.
 
 #### Industry practice
 
-16. Kohavi, R., Tang, D., & Xu, Y. (2020). *Trustworthy Online Controlled Experiments: A Practical Guide to A/B Testing*. Cambridge University Press. [doi:10.1017/9781108653985](https://doi.org/10.1017/9781108653985). (The reference for platform practice: SRM as an invalidation gate, guardrails, correction conventions.)
-17. Kohavi, R., Longbotham, R., Sommerfield, D., & Henne, R.M. (2009). Controlled experiments on the web: survey and practical guide. *Data Mining and Knowledge Discovery*, 18, 140-181. [doi:10.1007/s10618-008-0114-1](https://doi.org/10.1007/s10618-008-0114-1).
-18. Crook, T., Frasca, B., Kohavi, R., & Longbotham, R. (2009). Seven pitfalls to avoid when running controlled experiments on the web. *Proceedings of KDD '09*. [doi:10.1145/1557019.1557139](https://doi.org/10.1145/1557019.1557139). (Peeking and novelty-effect pitfalls.)
-19. Fabijan, A., Gupchup, J., Gupta, S., Omhover, J., Qin, W., Vermeer, L., & Dmitriev, P. (2019). Diagnosing sample ratio mismatch in online controlled experiments. *Proceedings of KDD '19*. [doi:10.1145/3292500.3330722](https://doi.org/10.1145/3292500.3330722). (SRM taxonomy and the strict-alpha convention.)
-20. Deng, A., Xu, Y., Kohavi, R., & Walker, T. (2013). Improving the sensitivity of online controlled experiments by utilizing pre-experiment data (CUPED). *Proceedings of WSDM '13*. [doi:10.1145/2433396.2433413](https://doi.org/10.1145/2433396.2433413). (The variance-reduction technique noted under Future Work.)
-21. Lee, M.R., & Shen, M. (2018). Winner's curse: bias estimation for total effects of features in online controlled experiments. *Proceedings of KDD '18*. [doi:10.1145/3219819.3219905](https://doi.org/10.1145/3219819.3219905). (The winner's curse measured inside an industry platform.)
-22. Stucchio, C. (2015). *Bayesian A/B Testing at VWO* (technical whitepaper). [vwo.com/downloads/VWO_SmartStats_technical_whitepaper.pdf](https://vwo.com/downloads/VWO_SmartStats_technical_whitepaper.pdf). (The expected-loss decision rule used in the Bayesian panel.)
+- [Trustworthy Online Controlled Experiments: A Practical Guide to A/B Testing](https://doi.org/10.1017/9781108653985) (Kohavi, Tang & Xu, 2020) - the platform-practice reference for SRM as an invalidation gate, multiplicity conventions, and guardrails.
+- [Diagnosing sample ratio mismatch in online controlled experiments](https://doi.org/10.1145/3292500.3330722) (Fabijan et al., KDD 2019) - the SRM taxonomy and strict-alpha convention used by `abkit.health`.
+- [Winner's curse: bias estimation for total effects of features in online controlled experiments](https://doi.org/10.1145/3219819.3219905) (Lee & Shen, KDD 2018) - the winner's curse measured inside an industry platform; the industrial counterpart of this project's central finding.
+- [Improving the sensitivity of online controlled experiments by utilizing pre-experiment data (CUPED)](https://doi.org/10.1145/2433396.2433413) (Deng et al., WSDM 2013) - the variance-reduction technique listed under Future Work; it needs the user-level data this archive lacks.
+- [Bayesian A/B Testing at VWO](https://vwo.com/downloads/VWO_SmartStats_technical_whitepaper.pdf) (Stucchio, 2015) - the expected-loss decision rule used in the Bayesian panel of the readout page.
+
+---
+
+```
+root/
+├── .github/workflows/ci.yml          # CI: lint, types, tests, sample smoke run
+├── .streamlit/config.toml            # Dashboard theme
+├── config/
+│   ├── defaults.yaml                 # Every statistical default, documented
+│   └── fitted_priors.yaml            # Frozen corpus priors (exploratory fit only)
+├── data/
+│   ├── raw/                          # Checksummed OSF downloads (not tracked)
+│   ├── processed/                    # Normalized parquet per split (not tracked)
+│   └── sample/sample_50_tests.csv    # Committed 50-test sample for CI
+├── notebooks/
+│   └── upworthy_readouts.ipynb       # Narrative results walkthrough
+├── outputs/
+│   ├── figures/                      # Meta-analysis figures per split
+│   └── results/                      # Committed batch readouts (parquet/JSON)
+├── src/
+│   ├── abkit/                        # The statistics library (typed, tested, importable alone)
+│   ├── analysis/                     # Ingest -> priors -> batch readouts -> meta-analysis
+│   └── dashboard/                    # Streamlit app (4 pages, read-only)
+├── tests/                            # 82 tests; the simulation-validation suite
+├── Dockerfile                        # Dashboard container (results baked in)
+├── Makefile                          # Every artifact regenerable from here
+├── pyproject.toml                    # Dependencies and tool configuration
+└── README.md
+```

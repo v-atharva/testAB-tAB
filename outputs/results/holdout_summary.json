@@ -1,0 +1,63 @@
+{
+  "dataset": "holdout",
+  "n_tests": 4871,
+  "n_arms": 22600,
+  "verdict_counts": {
+    "underpowered": 2797,
+    "keep_baseline": 800,
+    "invalid_srm": 729,
+    "ship_variant": 540,
+    "insufficient_data": 5
+  },
+  "winners_curse": {
+    "n_corrected_winners": 663,
+    "median_exaggeration_ratio": 1.725,
+    "median_naive_rel_lift": 1.0154,
+    "median_shrunk_rel_lift": 0.5057,
+    "median_excess_rel_lift_pp": 41.29
+  },
+  "power": {
+    "median_achieved_power": 0.314,
+    "frac_tests_power_ge_80": 0.0367
+  },
+  "fdr": {
+    "wins_uncorrected": 878,
+    "wins_holm": 540,
+    "wins_holm_plus_bh": 282,
+    "frac_naive_wins_evaporating": 0.6788
+  },
+  "peeking": {
+    "sim_naive_fp_by_looks": {
+      "1": 0.0555,
+      "2": 0.093,
+      "5": 0.1465,
+      "10": 0.1965,
+      "20": 0.236,
+      "50": 0.286
+    },
+    "sim_msprt_fp_continuous": 0.005,
+    "replay_tests_without_corrected_winner": 3602,
+    "replay_phantom_win_rate_naive": 0.3712,
+    "replay_phantom_win_rate_msprt": 0.0702
+  },
+  "srm": {
+    "n_failed": 729,
+    "rate": 0.1497
+  },
+  "headline_features": {
+    "n_paired_tests": 387,
+    "significant_features_bh": [
+      "question",
+      "number",
+      "demonstrative"
+    ]
+  },
+  "upworthy_audit": {
+    "n_declared": 1117,
+    "frac_of_tests": 0.2293,
+    "frac_winner_is_baseline_arm": 0.308,
+    "frac_confirmed_by_corrected_analysis": 0.1961,
+    "frac_underpowered_verdict": 0.5327,
+    "frac_srm_failed": 0.1513
+  }
+}

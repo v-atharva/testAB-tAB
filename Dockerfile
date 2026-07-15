@@ -6,6 +6,7 @@ COPY pyproject.toml uv.lock README.md ./
 RUN uv sync --frozen --no-install-project --no-dev
 
 COPY config/ config/
+COPY .streamlit/ .streamlit/
 COPY src/ src/
 COPY data/sample/ data/sample/
 COPY outputs/ outputs/

@@ -1,7 +1,7 @@
 # 🧪 Upworthy Readout: An Experiment Readout Engine and Decision Dashboard for 32,487 Real A/B Tests
 
 Every headline/image A/B test Upworthy.com ran between January 2013 and April 2015 - 32,487 experiments, 150,817 arms, ~538 million participant assignments ([Upworthy Research Archive](https://upworthy.natematias.com/about-the-archive.html), [Nature Scientific Data](https://www.nature.com/articles/s41597-021-00934-7)) - re-analyzed with the statistics an experimentation platform should have applied.
-We built a reusable statistics library, a batch analysis pipeline, and a dashboard that renders a decision-grade readout for any of those experiments.
+The project comprises a reusable statistics library, a batch analysis pipeline, and a dashboard that renders a decision-grade readout for any of those experiments.
 
 A readout must get five things right: health checks before inference (a broken traffic split invalidates a test, it doesn't decide it); corrections for testing many arms and many experiments; the winner's curse (the arm you noticed *because it won* is exaggerated by selection); power against effects that actually occur, so "not significant" is never silently read as "no effect"; and anytime-valid methods if anyone will peek before the end.
 This repo demonstrates all five, on real data, at scale.
@@ -12,7 +12,7 @@ This repo demonstrates all five, on real data, at scale.
 
 ### Headline Findings
 
-We analyzed 27,612 tests (22,741 confirmatory + 4,871 holdout; 2 single-arm tests dropped) exactly once, with methods frozen from the exploratory set:
+27,612 tests (22,741 confirmatory + 4,871 holdout; 2 single-arm tests dropped) were analyzed exactly once, with methods frozen from the exploratory set:
 
 1. **Winner's curse is huge.**
    The median winning arm claims **+96%** relative CTR lift; the shrinkage-corrected estimate is **+50%** - a median exaggeration of **×1.69**.
@@ -44,7 +44,7 @@ No result from those sets fed back into any choice.
 
 ### Technology Stack
 
-We have used a combination of the following technologies:
+The project uses a combination of the following technologies:
 
 1. **Python 3.11+** - the core language for the statistics library, the pipeline, and the dashboard.
 2. **NumPy + SciPy** - vectorized Monte Carlo, distributions, optimization, and quadrature behind every statistical routine.
@@ -55,7 +55,7 @@ We have used a combination of the following technologies:
 7. **uv** - fast, lockfile-driven environment management, used identically in development, CI, and Docker.
 8. **pytest + statsmodels** - the simulation-validation test suite; statsmodels appears only as a reference implementation to validate against.
 
-We have kept **abkit**, the statistics core, free of pandas and I/O because pure functions on counts are trivially testable by simulation and reusable outside this project.
+**abkit**, the statistics core, is kept free of pandas and I/O because pure functions on counts are trivially testable by simulation and reusable outside this project.
 
 ---
 
@@ -140,7 +140,7 @@ CI runs lint (ruff), types (mypy strict), the full test suite, and an end-to-end
 - **SRM.**
   Chi-square against uniform allocation at α=1e-3.
   A large share of archive tests fail (15.5% exploratory).
-  We checked the obvious mechanism - arms added mid-test - and it does *not* explain the failures (failing tests have *smaller* arm-creation spreads).
+  Checking the obvious mechanism - arms added mid-test - shows it does *not* explain the failures (failing tests have *smaller* arm-creation spreads).
   The cause is not recoverable from aggregate data; flagged tests are excluded from all win counts, which is the correct platform behavior regardless of mechanism.
 - **Power.**
   "Achieved power" is against a one-prior-sd true lift - the size of effect this corpus actually produces - not an arbitrary MDE.
@@ -158,7 +158,7 @@ CI runs lint (ruff), types (mypy strict), the full test suite, and an end-to-end
 - **No user-level data.**
   Aggregates per arm only: no CUPED (nothing to covary on), no interference or novelty-effect checks, and sequential replays are reconstructions, not logs.
 - **SRM mechanism unknown.**
-  We can flag and exclude, but not diagnose, the allocation anomalies.
+  The analysis can flag and exclude, but not diagnose, the allocation anomalies.
 - **External validity.**
   One company, one surface, one outcome.
   The *methods* transfer; the *numbers* describe this corpus.
@@ -174,7 +174,7 @@ Extensions this archive cannot support (mostly for lack of user-level data), but
 - **Automated SRM triage**, not just detection: segment-level chi-squares (browser, geo, day) to localize the broken slice, and quarantine rules.
 - **Interference & novelty checks** - switchback or cluster designs where units interact; first-week vs later-week effect comparison before shipping.
 - **Corpus-level holdouts** - a standing 5% global holdout to measure the *cumulative* effect of shipped wins against the shrinkage predictions (the winner's-curse ledger, closed).
-- **Decision memos as artifacts** - the dashboard's verdict block, persisted and versioned per experiment, so "why did we ship this" has an answer a year later.
+- **Decision memos as artifacts** - the dashboard's verdict block, persisted and versioned per experiment, so "why was this shipped" has an answer a year later.
 
 ---
 

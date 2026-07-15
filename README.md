@@ -42,23 +42,6 @@ No result from those sets fed back into any choice.
 
 ---
 
-### Technology Stack
-
-The project uses a combination of the following technologies:
-
-1. **Python 3.11+** - the core language for the statistics library, the pipeline, and the dashboard.
-2. **NumPy + SciPy** - vectorized Monte Carlo, distributions, optimization, and quadrature behind every statistical routine.
-3. **Pandas + PyArrow** - data manipulation in the analysis layer and compact Parquet results the dashboard reads.
-4. **FastAPI + uvicorn** - a thin, read-only JSON API over abkit and the precomputed results; the frontend renders numbers, it never derives them.
-5. **Hand-built SPA + plotly.js (WebGL)** - the four-page dashboard: no framework, vendored plotly.js for interactive, animated, and 3-D charts.
-6. **Matplotlib** - the static meta-analysis figures in `outputs/figures/`.
-7. **uv** - fast, lockfile-driven environment management, used identically in development, CI, and Docker.
-8. **pytest + statsmodels** - the simulation-validation test suite; statsmodels appears only as a reference implementation to validate against.
-
-**abkit**, the statistics core, is kept free of pandas and I/O because pure functions on counts are trivially testable by simulation and reusable outside this project.
-
----
-
 ### The Three Components
 
 1. **`abkit` - a reusable experimentation library (`src/abkit/`).**
@@ -200,6 +183,23 @@ With richer access (an experimentation API, event-level exports, or authorized i
 - [Winner's curse: bias estimation for total effects of features in online controlled experiments](https://doi.org/10.1145/3219819.3219905) (Lee & Shen, KDD 2018) - the winner's curse measured inside an industry platform; the industrial counterpart of this project's central finding.
 - [Improving the sensitivity of online controlled experiments by utilizing pre-experiment data (CUPED)](https://doi.org/10.1145/2433396.2433413) (Deng et al., WSDM 2013) - the variance-reduction technique listed under Future Work; it needs the user-level data this archive lacks.
 - [Bayesian A/B Testing at VWO](https://vwo.com/downloads/VWO_SmartStats_technical_whitepaper.pdf) (Stucchio, 2015) - the expected-loss decision rule used in the Bayesian panel of the readout page.
+
+---
+
+### Tech Stack
+
+Following tech stack is being used:
+
+1. **Python v3.11+** - the core language for the statistics library, the pipeline, and the dashboard.
+2. **NumPy + SciPy** - vectorized Monte Carlo, distributions, optimization, and quadrature behind every statistical routine.
+3. **Pandas + PyArrow** - data manipulation in the analysis layer and compact Parquet results the dashboard reads.
+4. **FastAPI + uvicorn** - a thin, read-only JSON API over abkit and the precomputed results; the frontend renders numbers, it never derives them.
+5. **Hand-built SPA + plotly.js (WebGL)** - the four-page dashboard: no framework, vendored plotly.js for interactive, animated, and 3-D charts.
+6. **Matplotlib** - the static meta-analysis figures in `outputs/figures/`.
+7. **uv** - fast, lockfile-driven environment management, used identically in development, CI, and Docker.
+8. **pytest + statsmodels** - the simulation-validation test suite; statsmodels appears only as a reference implementation to validate against.
+
+**abkit**, the statistics core, is kept free of pandas and I/O because pure functions on counts are trivially testable by simulation and reusable outside this project.
 
 ---
 

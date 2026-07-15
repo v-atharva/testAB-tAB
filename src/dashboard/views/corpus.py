@@ -10,7 +10,7 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from analysis.paths import RESULTS_DIR
-from dashboard import data, ui
+from dashboard import data, theme, ui
 
 
 def _summary(dataset: str) -> dict[str, Any]:
@@ -23,7 +23,12 @@ def _summary(dataset: str) -> dict[str, Any]:
 
 
 def render() -> None:
-    st.title("Corpus explorer")
+    theme.hero(
+        "Corpus explorer",
+        "The meta-analysis, interactive. Pick a dataset split; every number "
+        "below excludes SRM-failing tests from win counts and applies the "
+        "corrections described in the README.",
+    )
     datasets = data.available_datasets()
     if not datasets:
         st.error("No batch results found. Run `make analysis` first.")
@@ -37,27 +42,29 @@ def render() -> None:
     fdr = summary.get("fdr", {})
     pw = summary.get("power", {})
     srm = summary.get("srm", {})
-    c1, c2, c3, c4 = st.columns(4)
+    cards = []
     if wc:
-        c1.metric("median winner exaggeration", f"x{wc['median_exaggeration_ratio']:.2f}",
-                  help="Naive winning-arm lift / shrinkage-corrected lift, among "
-                       "corrected winners.")
+        cards.append({"label": "median winner exaggeration",
+                      "value": f"x{wc['median_exaggeration_ratio']:.2f}", "tone": "grad",
+                      "sub": "naive winning-arm lift / shrinkage-corrected lift"})
     if fdr:
-        c2.metric("naive wins that evaporate", f"{fdr['frac_naive_wins_evaporating']:.0%}",
-                  help="Uncorrected p<.05 wins that do not survive within-test Holm "
-                       "+ corpus-level BH correction.")
+        cards.append({"label": "naive wins that evaporate",
+                      "value": f"{fdr['frac_naive_wins_evaporating']:.0%}",
+                      "sub": "don't survive within-test Holm + corpus-level BH"})
     if pw:
-        c3.metric("tests with ≥80% power", f"{pw['frac_tests_power_ge_80']:.1%}",
-                  help="Against a corpus-typical true lift (one prior sd).")
+        cards.append({"label": "tests with ≥80% power",
+                      "value": f"{pw['frac_tests_power_ge_80']:.1%}",
+                      "sub": "against a corpus-typical true lift (one prior sd)"})
     if srm:
-        c4.metric("SRM failures", f"{srm['rate']:.1%}",
-                  help="Tests whose traffic split deviates from uniform at p<0.001. "
-                       "Excluded from all win counts.")
-
-    st.divider()
+        cards.append({"label": "SRM failures", "value": f"{srm['rate']:.1%}",
+                      "dot": "fail",
+                      "sub": "traffic split off uniform at p<0.001 — excluded "
+                             "from all win counts"})
+    if cards:
+        theme.stat_grid(cards)
 
     # ---------------- winner's curse, interactive ---------------------------
-    st.subheader("Winner's curse: naive vs corrected winner lift")
+    theme.section("Winner's curse: naive vs corrected winner lift")
     st.caption(
         "Each point is an experiment with a corrected significant winner. "
         "Distance below the diagonal is selection-bias exaggeration. Hover for "
@@ -86,10 +93,10 @@ def render() -> None:
         fig.update_yaxes(title="shrinkage-corrected lift (%)", range=[0, lim])
         fig.update_layout(height=480, margin={"l": 10, "r": 10, "t": 10, "b": 10},
                           legend={"orientation": "h", "y": 1.08})
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(ui.style_fig(fig), use_container_width=True)
 
     # ---------------- power distribution ------------------------------------
-    st.subheader("Achieved power across the corpus")
+    theme.section("Achieved power across the corpus")
     ok = tests[~tests["srm_failed"]]
     fig2 = go.Figure(go.Histogram(
         x=ok["achieved_power"], nbinsx=40, marker={"color": ui.BLUE},
@@ -100,11 +107,11 @@ def render() -> None:
     fig2.update_xaxes(title="power to detect a corpus-typical lift")
     fig2.update_yaxes(title="experiments")
     fig2.update_layout(height=380, margin={"l": 10, "r": 10, "t": 10, "b": 10})
-    st.plotly_chart(fig2, use_container_width=True)
+    st.plotly_chart(ui.style_fig(fig2), use_container_width=True)
 
     # ---------------- FDR bars ----------------------------------------------
     if fdr:
-        st.subheader("How many 'wins' survive honest accounting?")
+        theme.section("How many 'wins' survive honest accounting?")
         labels = ["uncorrected (p < .05)", "within-test Holm", "+ BH across corpus"]
         counts = [fdr["wins_uncorrected"], fdr["wins_holm"], fdr["wins_holm_plus_bh"]]
         fig3 = go.Figure(go.Bar(
@@ -115,10 +122,10 @@ def render() -> None:
         ))
         fig3.update_xaxes(title="experiments with a declared winner")
         fig3.update_layout(height=300, margin={"l": 10, "r": 10, "t": 10, "b": 10})
-        st.plotly_chart(fig3, use_container_width=True)
+        st.plotly_chart(ui.style_fig(fig3), use_container_width=True)
 
     # ---------------- verdicts + Upworthy audit -----------------------------
-    st.subheader("Verdict distribution and the Upworthy audit")
+    theme.section("Verdict distribution and the Upworthy audit")
     v1, v2 = st.columns(2)
     vc = tests["verdict"].value_counts()
     fig4 = go.Figure(go.Bar(
@@ -128,7 +135,7 @@ def render() -> None:
     ))
     fig4.update_layout(height=300, margin={"l": 10, "r": 10, "t": 10, "b": 10},
                        xaxis_title="experiments")
-    v1.plotly_chart(fig4, use_container_width=True)
+    v1.plotly_chart(ui.style_fig(fig4), use_container_width=True)
     ua = summary.get("upworthy_audit", {})
     if ua and ua.get("n_declared"):
         v2.markdown(

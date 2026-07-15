@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import streamlit as st
 
+from dashboard import theme
 from dashboard.views import corpus, design, readout, sequential_view
 
 st.set_page_config(
@@ -17,11 +18,12 @@ st.set_page_config(
     page_icon="🧪",
     layout="wide",
 )
+theme.inject()
 
 pages = st.navigation(
     [
-        st.Page(readout.render, title="Experiment readout", icon="🔎", url_path="readout",
-                default=True),
+        # NOTE: Streamlit serves the default page at "/" and ignores url_path on it
+        st.Page(readout.render, title="Experiment readout", icon="🔎", default=True),
         st.Page(sequential_view.render, title="Sequential monitoring", icon="⏱️",
                 url_path="sequential"),
         st.Page(design.render, title="Design a test", icon="📐", url_path="design"),
@@ -31,7 +33,14 @@ pages = st.navigation(
 
 with st.sidebar:
     st.markdown(
-        "**32,487 real A/B tests**\n\n"
+        '<div style="font-family:Sora,sans-serif;font-weight:700;font-size:1.05rem;'
+        'letter-spacing:-.01em;line-height:1.4;margin-bottom:.2rem">'
+        '32,487 real A/B tests</div>'
+        '<div style="height:2px;width:44px;border-radius:99px;margin-bottom:.7rem;'
+        'background:linear-gradient(90deg,#2a78d6,#1baf7a)"></div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown(
         "Decision-grade readouts for the Upworthy Research Archive. "
         "Methods were developed on the exploratory split only; every default "
         "(alpha, priors, gates) lives in `config/`.\n\n"

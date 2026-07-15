@@ -50,7 +50,8 @@
   "upworthy_audit": {
     "n_declared": 19,
     "frac_of_tests": 0.38,
-    "frac_surviving_correction": 0.1579,
+    "frac_winner_is_baseline_arm": 0.4211,
+    "frac_confirmed_by_corrected_analysis": 0.4211,
     "frac_underpowered_verdict": 0.4211,
     "frac_srm_failed": 0.0
   }

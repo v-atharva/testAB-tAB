@@ -9,21 +9,21 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from abkit import sequential
-from dashboard import data, ui
+from dashboard import data, theme, ui
 
 N_LOOKS = 60
 
 
 def render() -> None:
-    st.title("Sequential monitoring — when could we have stopped?")
-    st.caption(
-        "The archive records only final counts, so this is a **conditional-"
-        "permutation replay**: the arm's actual clicks are streamed in random "
+    theme.hero(
+        "Sequential monitoring — when could we have stopped?",
+        "The archive records only final counts, so this is a <b>conditional-"
+        "permutation replay</b>: the arm's actual clicks are streamed in random "
         "order, which is exact conditional on the observed totals. The shaded "
         "band is a 95% confidence sequence (mSPRT): valid at EVERY look "
         "simultaneously, so watching it daily is safe. The orange markers show "
         "where a naive repeated z-test would have called a winner — the "
-        "malpractice this page is built to expose."
+        "malpractice this page is built to expose.",
     )
 
     datasets = data.available_datasets()
@@ -112,30 +112,31 @@ def render() -> None:
     fig.update_yaxes(title="lift, percentage points of CTR", range=[-y_lim, y_lim])
     fig.update_layout(height=480, margin={"l": 10, "r": 10, "t": 30, "b": 10},
                       legend={"orientation": "h", "y": -0.25})
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(ui.style_fig(fig), use_container_width=True)
 
-    c1, c2, c3 = st.columns(3)
+    cards = []
     if trace.first_rejection is not None:
-        c1.metric("mSPRT verdict", "significant",
-                  f"could stop at {frac[trace.first_rejection]:.0%} of traffic",
-                  delta_color="off")
+        cards.append({"label": "mSPRT verdict", "value": "significant", "dot": "ok",
+                      "tone": "good",
+                      "sub": f"could stop safely at {frac[trace.first_rejection]:.0%} of traffic"})
     else:
-        c1.metric("mSPRT verdict", "no rejection",
-                  "never crossed — cannot call a winner at any look", delta_color="off")
-    c2.metric("always-valid p (final)", f"{trace.always_valid_p[-1]:.3g}", help=(
-        "Valid despite continuous monitoring: the minimum over time of the "
-        "mixture-martingale p-value."
-    ))
+        cards.append({"label": "mSPRT verdict", "value": "no rejection", "dot": "warn",
+                      "sub": "never crossed — cannot call a winner at any look"})
+    cards.append({"label": "always-valid p · final", "value": f"{trace.always_valid_p[-1]:.3g}",
+                  "sub": "valid despite continuous monitoring (mixture martingale)"})
     if naive_first is not None and trace.first_rejection is None:
-        c3.metric("naive peeking would have…", "declared a winner",
-                  f"at {frac[naive_first]:.0%} of traffic — a phantom win",
-                  delta_color="off")
+        cards.append({"label": "naive peeking would have…", "value": "called a win",
+                      "dot": "fail", "tone": "bad",
+                      "sub": f"at {frac[naive_first]:.0%} of traffic — a phantom win"})
     elif naive_first is not None:
-        c3.metric("naive first 'significance'", f"at {frac[naive_first]:.0%} of traffic",
-                  help="Uncorrected repeated testing; only trustworthy if it agrees "
-                       "with the anytime-valid analysis.")
+        cards.append({"label": "naive first 'significance'",
+                      "value": f"{frac[naive_first]:.0%} traffic",
+                      "sub": "uncorrected repeated testing; trust only if the "
+                             "anytime-valid analysis agrees"})
     else:
-        c3.metric("naive peeking", "never significant", delta_color="off")
+        cards.append({"label": "naive peeking", "value": "never fired", "dot": "ok",
+                      "sub": "no look reached p < 0.05 even uncorrected"})
+    theme.stat_grid(cards)
 
     st.caption(
         "Replays are seeded and deterministic per experiment. Re-running the "

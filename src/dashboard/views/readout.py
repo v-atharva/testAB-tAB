@@ -7,7 +7,7 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from abkit.readout import Readout
-from dashboard import data, ui
+from dashboard import data, theme, ui
 
 
 def _arm_label(arms_df: pd.DataFrame, i: int) -> str:
@@ -57,12 +57,12 @@ def _lift_figure(r: Readout, arm_labels: dict[int, str]) -> go.Figure:
 
 
 def render() -> None:
-    st.title("Experiment readout")
-    st.caption(
+    theme.hero(
+        "Experiment readout",
         "Pick any archived experiment. The verdict applies, in order: health "
         "checks → minimum sample → Holm-corrected comparison vs the baseline → "
         "power against corpus-realistic lifts. Baseline = earliest-created "
-        "package (the archive designates no control; you can re-pick below)."
+        "package (the archive designates no control; you can re-pick below).",
     )
 
     datasets = data.available_datasets()
@@ -98,10 +98,9 @@ def render() -> None:
 
     ui.verdict_banner(r)
     ui.health_badges(r)
-    st.divider()
 
     # ---------------- arms table -------------------------------------------
-    st.subheader("Arms")
+    theme.section("Arms")
     st.caption(
         "CTR with 95% Wilson intervals. P(best) and expected loss are Bayesian "
         "quantities under the corpus prior: use them to pick a forced winner, "
@@ -123,17 +122,17 @@ def render() -> None:
     st.dataframe(table, hide_index=True, use_container_width=True)
 
     # ---------------- lifts -------------------------------------------------
-    st.subheader("Lift vs baseline — naive and shrinkage-corrected")
+    theme.section("Lift vs baseline — naive and shrinkage-corrected")
     st.caption(
         "Orange = the raw estimate (what a naive readout reports). Blue = the "
         "empirical-Bayes corrected estimate under the corpus prior — the number "
         "to plan around. Noisy tests get pulled hard toward the corpus mean; "
         "that pull IS the winner's-curse correction."
     )
-    st.plotly_chart(_lift_figure(r, label_of), use_container_width=True)
+    st.plotly_chart(ui.style_fig(_lift_figure(r, label_of)), use_container_width=True)
 
     # ---------------- statistics table -------------------------------------
-    st.subheader("Comparisons vs baseline (Holm-corrected family)")
+    theme.section("Comparisons vs baseline (Holm-corrected family)")
     st.caption(
         f"Omnibus chi-square across all {len(r.arms)} arms: p = {r.omnibus_chi2_p:.3g}. "
         f"Pairwise p-values below are Holm-adjusted across the {len(r.comparisons)} "

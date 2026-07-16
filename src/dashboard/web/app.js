@@ -4,8 +4,8 @@
 const $ = (sel, root = document) => root.querySelector(sel);
 const main = $("#main");
 
-const ACCENT = "#2a78d6", NAIVE = "#eb6834", MUTED = "#8b93a1",
-      LINE = "#e8eaee", INK2 = "#4c5563", GOOD = "#0e9f6e";
+const ACCENT = "#2a78d6", NAIVE = "#eb6834", MUTED = "#8d887a",
+      LINE = "#eae2d0", INK2 = "#3f3f3c", GOOD = "#0c8a5b";
 
 const state = {
   meta: null,
@@ -53,14 +53,33 @@ function esc(s) {
 }
 
 const baseLayout = (extra = {}) => ({
-  font: { family: "IBM Plex Sans, sans-serif", color: INK2, size: 12.5 },
+  font: { family: "Archivo, sans-serif", color: INK2, size: 12.5 },
   paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "rgba(0,0,0,0)",
   margin: { l: 54, r: 18, t: 12, b: 44 },
-  hoverlabel: { bgcolor: "#16181d", bordercolor: "#16181d",
-    font: { family: "IBM Plex Mono, monospace", color: "#fbfbfa", size: 12 } },
-  xaxis: { gridcolor: LINE, zerolinecolor: "#ccd1da" },
-  yaxis: { gridcolor: LINE, zerolinecolor: "#ccd1da" },
+  hoverlabel: { bgcolor: "#131313", bordercolor: "#131313",
+    font: { family: "IBM Plex Mono, monospace", color: "#faf3e7", size: 12 } },
+  xaxis: { gridcolor: LINE, zerolinecolor: "#b9b2a2" },
+  yaxis: { gridcolor: LINE, zerolinecolor: "#b9b2a2" },
   ...extra,
+});
+
+/* text lives behind these */
+const info = (html, cls = "") =>
+  `<span class="info-wrap"><button class="info" aria-label="More info">i</button>` +
+  `<div class="tip ${cls}">${html}</div></span>`;
+const section = (title, tip, cls = "") =>
+  `<div class="section">${title}${tip ? info(tip, cls) : ""}</div>`;
+
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest("button.info");
+  const openWraps = document.querySelectorAll(".info-wrap.open");
+  if (btn) {
+    const wrap = btn.parentElement;
+    openWraps.forEach((w) => w !== wrap && w.classList.remove("open"));
+    wrap.classList.toggle("open");
+  } else if (!e.target.closest(".tip")) {
+    openWraps.forEach((w) => w.classList.remove("open"));
+  }
 });
 const PCONF = { displayModeBar: false, responsive: true };
 
@@ -145,11 +164,13 @@ async function viewReadout() {
   const view = document.createElement("div");
   view.className = "view";
   view.innerHTML = `
-    <h1>Experiment readout</h1>
-    <p class="lede">The verdict applies, in order: health checks → minimum sample →
-      Holm-corrected comparison vs the baseline → power against corpus-realistic
-      lifts. Baseline = earliest-created package (re-pickable; the archive
-      designates no control).</p>
+    <h1>Experiment readout ${info(
+      "The verdict applies <b>in order</b>: health checks → minimum sample → " +
+      "Holm-corrected comparison vs the baseline → power against corpus-realistic " +
+      "lifts. A test that fails an earlier gate never reaches a later one. " +
+      "Baseline = earliest-created package (re-pickable; the archive designates " +
+      "no control arm)."
+    )}</h1>
     <div class="controls"></div>
     <div id="ro-body"></div>`;
   const controls = $(".controls", view);
@@ -194,8 +215,11 @@ async function viewReadout() {
 
   function renderReadout(body, r) {
     const h = r.health;
+    const STICKER = { ship: "SHIP IT", keep: "KEEP A", warn: "DON'T CONCLUDE",
+                      invalid: "VOID" };
     body.innerHTML = `
       <div class="verdict ${r.verdict.kind}">
+        <div class="sticker">${STICKER[r.verdict.kind]}</div>
         <div class="v-body">
           <div class="v-title">${esc(r.verdict.headline)}</div>
           ${r.verdict.notes.map((n) => `<div class="v-note">${esc(n)}</div>`).join("")}
@@ -215,20 +239,22 @@ async function viewReadout() {
           <div class="v" id="ro-power">0%</div>
           <div class="s">vs a corpus-typical lift (${fmt.pct(h.benchmark_rel_lift)})</div></div>
       </div>
-      <div class="section">Lift vs baseline — naive and corrected</div>
-      <p class="hint">Orange = raw estimate (what a naive readout reports). Blue =
-        empirical-Bayes corrected under the corpus prior — the number to plan
-        around. Noisy tests get pulled hard toward the corpus mean; that pull is
-        the winner's-curse correction. Intervals are 95%.</p>
+      ${section("Lift vs baseline",
+        "<b>Orange</b> = naive raw estimate (what an uncorrected readout reports). " +
+        "<b>Blue</b> = empirical-Bayes corrected under the corpus prior — the number " +
+        "to plan around. Noisy tests get pulled hard toward the corpus mean; that " +
+        "pull <b>is</b> the winner's-curse correction. Intervals are 95%.")}
       <div class="chart"><div id="ro-lift" style="height:${110 + 74 * r.comparisons.length}px"></div></div>
-      <div class="section">Arms</div>
-      <p class="hint">CTR with 95% Wilson intervals. P(best) and expected loss are
-        Bayesian decision aids under the corpus prior — never significance.</p>
+      ${section("Arms",
+        "CTR with 95% Wilson intervals. <b>P(best)</b> and <b>expected loss</b> are " +
+        "Bayesian decision aids under the corpus prior: use them to pick a forced " +
+        "winner when a decision can't wait — they are never significance.")}
       ${armsTable(r)}
-      <div class="section">Comparisons vs baseline · Holm-corrected family</div>
-      <p class="hint">Omnibus chi-square across all ${r.arms.length} arms:
-        p = ${fmt.p(r.omnibus_p)}. A variant only counts as a winner on the
-        Holm-adjusted value.</p>
+      ${section("Holm-corrected comparisons",
+        `Omnibus chi-square across all ${r.arms.length} arms: p = ${fmt.p(r.omnibus_p)}. ` +
+        "Testing several variants gives several chances to be fooled; the Holm " +
+        "adjustment charges for them, so a variant only counts as a winner on the " +
+        "adjusted value.")}
       ${compTable(r)}`;
     countUp($("#ro-power", body), h.achieved_power, (x) => `${Math.round(100 * x)}%`);
     liftChart($("#ro-lift", body), r);
@@ -308,13 +334,15 @@ async function viewSequential() {
   const view = document.createElement("div");
   view.className = "view";
   view.innerHTML = `
-    <h1>Sequential monitoring</h1>
-    <p class="lede">The archive stores only final counts, so this is a
-      <b>conditional-permutation replay</b> — the arm's actual clicks streamed in
-      random order, exact given the observed totals. The band is a 95%
-      <b>confidence sequence</b> (mSPRT): valid at every look simultaneously, so
-      watching it daily is safe. Orange × marks: where a naive repeated z-test
-      would have called a winner.</p>
+    <h1>Sequential monitoring ${info(
+      "The archive stores only final counts, so this is a <b>conditional-" +
+      "permutation replay</b> — the arm's actual clicks streamed in random order, " +
+      "exact given the observed totals. Replays are seeded and deterministic: they " +
+      "illustrate monitoring behavior, never new evidence. The band is a 95% " +
+      "<b>confidence sequence</b> (mSPRT), valid at every look simultaneously, so " +
+      "watching it daily is safe. Orange × marks: where a naive repeated z-test " +
+      "would have called a winner."
+    )}</h1>
     <div class="controls"></div>
     <div id="sq-body"></div>`;
   const controls = $(".controls", view);
@@ -382,9 +410,7 @@ async function viewSequential() {
           <div class="s">${d.naive_first == null ? "no look reached p < 0.05 even uncorrected"
             : phantom ? `declared a "winner" at ${Math.round(100 * d.frac[d.naive_first])}% of traffic; the honest analysis never confirms it`
             : "first uncorrected rejection — trust only the anytime-valid call"}</div></div>
-      </div>
-      <p class="footnote">Replays are seeded and deterministic per experiment; they
-        illustrate monitoring behavior, not new evidence beyond the final counts.</p>`;
+      </div>`;
 
     const el = $("#sq-chart", body);
     const X = d.frac.map((f) => 100 * f);
@@ -446,11 +472,12 @@ async function viewDesign() {
   const view = document.createElement("div");
   view.className = "view";
   view.innerHTML = `
-    <h1>Design a test</h1>
-    <p class="lede">Anchored to reality: a typical true lift in this corpus is
-      <b>${fmt.pct(m.typical_rel_lift)} relative</b> (one sd of the fitted prior)
-      around a mean CTR of <b>${(100 * m.ctr_prior_mean).toFixed(1)}%</b>.
-      Plan for effects that actually occur.</p>
+    <h1>Design a test ${info(
+      `Anchored to reality: a typical true lift in this corpus is <b>${fmt.pct(m.typical_rel_lift)}
+      relative</b> (one sd of the prior fitted on the exploratory set) around a mean
+      CTR of <b>${(100 * m.ctr_prior_mean).toFixed(1)}%</b>. The slider preselects that
+      typical lift — plan for effects that actually occur, not the ones you hope for.`
+    )}</h1>
     <div class="controls">
       <div class="field"><label>baseline CTR %</label>
         <input id="dg-p0" type="number" min="0.1" max="50" step="0.1"
@@ -476,10 +503,10 @@ async function viewDesign() {
         <div class="v" id="dg-pow">0%</div>
         <div class="s">chance of detecting a ${fmt.pct(m.typical_rel_lift)} lift if truly there</div></div>
     </div>
-    <div class="section">The whole trade-off, in one surface</div>
-    <p class="hint">Power as a function of impressions per arm × relative lift, at
-      your baseline CTR and alpha. The marker is your current plan; the ridge at
-      80% is the planning bar. Drag to rotate, scroll to zoom.</p>
+    ${section("The whole trade-off, in one surface",
+      "Power as a function of impressions per arm × relative lift, at your " +
+      "baseline CTR and alpha. The <b>diamond</b> is your current plan; the orange " +
+      "<b>ridge at 80%</b> is the planning bar. Drag to rotate, scroll to zoom.")}
     <div class="chart"><div id="dg-surface" style="height:520px"></div></div>`;
   mount(view);
 
@@ -582,9 +609,11 @@ async function viewCorpus() {
   const view = document.createElement("div");
   view.className = "view";
   view.innerHTML = `
-    <h1>Corpus explorer</h1>
-    <p class="lede">The meta-analysis, interactive. Win counts exclude SRM-failing
-      tests and apply within-test Holm + corpus-level BH correction.</p>
+    <h1>Corpus explorer ${info(
+      "The meta-analysis, interactive. Every win count excludes SRM-failing tests " +
+      "and applies within-test Holm + corpus-level Benjamini-Hochberg correction — " +
+      "the same accounting the README reports."
+    )}</h1>
     <div class="controls"></div>
     <div id="cx-body"></div>`;
   $(".controls", view).append(datasetSelect(render));
@@ -619,21 +648,36 @@ async function viewCorpus() {
         <div class="v" id="cx-srm">0%</div>
         <div class="s">excluded from every win count</div></div>
     </div>
-    <div class="section">Winner's curse — every corrected winner, in 3-D</div>
-    <p class="hint">Each point is an experiment with a corrected significant winner:
-      naive lift × corrected lift × achieved power. The gap between a point and
-      the diagonal wall is selection-bias exaggeration — watch it widen as power
-      falls. Drag to rotate; hover for the headline.</p>
+    ${section("Winner's curse — every corrected winner, in 3-D",
+      "Each point is an experiment with a corrected significant winner: naive " +
+      "lift × corrected lift × achieved power. The gap between a point and the " +
+      "gray diagonal wall is selection-bias exaggeration — watch it widen as " +
+      "power falls. Drag to rotate; hover any point for its headline.")}
     <div class="chart"><div id="cx-3d" style="height:560px"></div></div>
-    <div class="section">Achieved power across the corpus</div>
+    ${section("Achieved power",
+      "Each test's power to detect a corpus-typical true lift (one prior sd, " +
+      "~+35% relative). The dashed line is the standard 80% planning bar.")}
     <div class="chart"><div id="cx-hist" style="height:320px"></div></div>
-    <div class="section">Verdicts, and Upworthy's own calls</div>
-    <p class="hint">${ua.n_declared ? `Upworthy's tooling declared a winner in
-      ${fmt.int(ua.n_declared)} tests (${Math.round(100 * ua.frac_of_tests)}%).
-      Re-analyzed: <b>${Math.round(100 * ua.frac_confirmed_by_corrected_analysis)}%
-      confirmed</b>; ${Math.round(100 * ua.frac_underpowered_verdict)}% came from
-      underpowered tests; ${Math.round(100 * ua.frac_srm_failed)}% from tests
-      failing SRM.` : ""}</p>
+    ${section("Upworthy's own calls",
+      "The archive records the winner Upworthy's tooling declared per test. " +
+      "Re-analyzed with health checks, corrections, and shrinkage, most of those " +
+      "calls do not stand up — the strongest argument for decision-grade readouts.",
+      "up")}
+    ${ua.n_declared ? `
+    <div class="stats">
+      <div class="stat"><div class="k">winners they declared</div>
+        <div class="v">${fmt.int(ua.n_declared)}</div>
+        <div class="s">${Math.round(100 * ua.frac_of_tests)}% of all tests</div></div>
+      <div class="stat"><div class="k"><span class="dot ok"></span>confirmed on re-analysis</div>
+        <div class="v good" id="cx-ua-conf">0%</div>
+        <div class="s">their pick survives corrected analysis</div></div>
+      <div class="stat"><div class="k"><span class="dot warn"></span>from underpowered tests</div>
+        <div class="v warn">${Math.round(100 * ua.frac_underpowered_verdict)}%</div>
+        <div class="s">declared where no conclusion was possible</div></div>
+      <div class="stat"><div class="k"><span class="dot fail"></span>from SRM-failing tests</div>
+        <div class="v bad">${Math.round(100 * ua.frac_srm_failed)}%</div>
+        <div class="s">declared on broken traffic splits</div></div>
+    </div>` : ""}
     <div class="chart"><div id="cx-verdicts" style="height:280px"></div></div>`;
 
   if (wc.median_exaggeration_ratio)
@@ -644,6 +688,9 @@ async function viewCorpus() {
     countUp($("#cx-pw", body), pw.frac_tests_power_ge_80, (x) => `${(100 * x).toFixed(1)}%`, 900);
   if (srm.rate != null)
     countUp($("#cx-srm", body), srm.rate, (x) => `${(100 * x).toFixed(1)}%`, 900);
+  if (ua.frac_confirmed_by_corrected_analysis != null && $("#cx-ua-conf", body))
+    countUp($("#cx-ua-conf", body), ua.frac_confirmed_by_corrected_analysis,
+            (x) => `${Math.round(100 * x)}%`, 900);
 
   // ---- 3-D winner's curse ----
   const w = d.winners;
@@ -714,7 +761,7 @@ async function viewCorpus() {
     textfont: { family: "IBM Plex Mono, monospace", size: 11.5 },
     hovertemplate: "%{y}: %{x:,} tests<extra></extra>",
   }], baseLayout({
-    height: 280, margin: { l: 210, r: 60, t: 6, b: 40 },
+    height: 280, margin: { l: 210, r: 96, t: 6, b: 40 },
     xaxis: { title: { text: "experiments" }, gridcolor: LINE },
     yaxis: { gridcolor: "rgba(0,0,0,0)" },
   }), PCONF);

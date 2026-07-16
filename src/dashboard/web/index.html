@@ -7,7 +7,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧪</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="app.css">
 <script src="vendor/plotly.min.js" defer></script>
 <script src="app.js" type="module" defer></script>
@@ -27,8 +27,11 @@
     <a href="#/design" data-view="design"><span>Design a test</span></a>
     <a href="#/corpus" data-view="corpus"><span>Corpus explorer</span></a>
     <div class="rail-foot">
-      Methods developed on the exploratory split only. An uncorrected
-      significant result is never presented as a win.
+      <span class="info-wrap"><button class="info" aria-label="About the method">i</button>
+        <div class="tip up"><b>House rules.</b> Every method, threshold, and prior was
+        developed on the exploratory split only; confirmatory + holdout ran exactly
+        once with methods frozen. An uncorrected significant result is never
+        presented as a win anywhere in this UI.</div></span>
     </div>
   </nav>
   <main id="main" class="main" tabindex="-1"></main>
